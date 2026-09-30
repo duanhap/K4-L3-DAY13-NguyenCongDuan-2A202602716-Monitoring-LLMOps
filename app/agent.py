@@ -125,6 +125,10 @@ class LabAgent:
                                     "tokens_in": response.usage.input_tokens,
                                     "tokens_out": response.usage.output_tokens,
                                     "cost_usd": cost_usd,
+                                    "prompt_name": prompt.name,
+                                    "prompt_label": prompt.label,
+                                    "prompt_version": prompt.version,
+                                    "prompt_source": prompt.source,
                                 },
                             )
                         except Exception as exc:

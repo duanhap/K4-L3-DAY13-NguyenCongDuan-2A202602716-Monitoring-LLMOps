@@ -23,17 +23,17 @@
 </head>
 <body>
 <h1>📊 K4-L3B Day 13 — Monitoring &amp; LLMOps Dashboard</h1>
-<div class="meta">Source: data/logs.jsonl &nbsp;|&nbsp; Time range: last 60 min &nbsp;|&nbsp; Refresh: 30s &nbsp;|&nbsp; Generated: 2026-09-30 08:16 UTC</div>
+<div class="meta">Source: data/logs.jsonl &nbsp;|&nbsp; Time range: last 60 min &nbsp;|&nbsp; Refresh: 30s &nbsp;|&nbsp; Generated: 2026-09-30 08:30 UTC</div>
 <div class="grid">
 
   <!-- 1. LATENCY -->
   <div class="card">
     <h2>⏱ Latency &amp; TTFT (ms)</h2>
     <div class="kpi">
-      <div class="kpi-item"><div class="kpi-val">152.0</div><div class="kpi-lbl">P50 ms</div></div>
-      <div class="kpi-item"><div class="kpi-val" style="color:#38bdf8">156.0</div><div class="kpi-lbl">P95 ms</div></div>
-      <div class="kpi-item"><div class="kpi-val">158.0</div><div class="kpi-lbl">P99 ms</div></div>
-      <div class="kpi-item"><div class="kpi-val">51.0</div><div class="kpi-lbl">TTFT P95</div></div>
+      <div class="kpi-item"><div class="kpi-val">2652.0</div><div class="kpi-lbl">P50 ms</div></div>
+      <div class="kpi-item"><div class="kpi-val" style="color:#38bdf8">2652.8</div><div class="kpi-lbl">P95 ms</div></div>
+      <div class="kpi-item"><div class="kpi-val">2652.96</div><div class="kpi-lbl">P99 ms</div></div>
+      <div class="kpi-item"><div class="kpi-val">50.0</div><div class="kpi-lbl">TTFT P95</div></div>
     </div>
     <div class="threshold ok">SLO: P95 ≤ 3000 ms — ✅ OK</div>
     <canvas id="latChart"></canvas>
@@ -43,7 +43,7 @@
   <div class="card">
     <h2>📈 Traffic (req/min)</h2>
     <div class="kpi">
-      <div class="kpi-item"><div class="kpi-val">81</div><div class="kpi-lbl">Total Requests</div></div>
+      <div class="kpi-item"><div class="kpi-val">5</div><div class="kpi-lbl">Total Requests</div></div>
     </div>
     <div class="threshold ok">SLO: rate ≥ 1 req/min</div>
     <canvas id="trafficChart"></canvas>
@@ -64,7 +64,7 @@
   <div class="card">
     <h2>💰 Cost (USD)</h2>
     <div class="kpi">
-      <div class="kpi-item"><div class="kpi-val">$0.164595</div><div class="kpi-lbl">Total</div></div>
+      <div class="kpi-item"><div class="kpi-val">$0.009255</div><div class="kpi-lbl">Total</div></div>
     </div>
     <div class="threshold ok">SLO: Total ≤ $2.50 — ✅ OK</div>
     <canvas id="costChart"></canvas>
@@ -74,9 +74,9 @@
   <div class="card">
     <h2>🔤 Tokens</h2>
     <div class="kpi">
-      <div class="kpi-item"><div class="kpi-val">3160</div><div class="kpi-lbl">Input Tokens</div></div>
-      <div class="kpi-item"><div class="kpi-val">10341</div><div class="kpi-lbl">Output Tokens</div></div>
-      <div class="kpi-item"><div class="kpi-val">13501</div><div class="kpi-lbl">Total</div></div>
+      <div class="kpi-item"><div class="kpi-val">175</div><div class="kpi-lbl">Input Tokens</div></div>
+      <div class="kpi-item"><div class="kpi-val">582</div><div class="kpi-lbl">Output Tokens</div></div>
+      <div class="kpi-item"><div class="kpi-val">757</div><div class="kpi-lbl">Total</div></div>
     </div>
     <div class="threshold ok">SLO: Total ≤ 50,000 tokens</div>
   </div>
@@ -85,7 +85,7 @@
   <div class="card">
     <h2>⭐ Quality Score</h2>
     <div class="kpi">
-      <div class="kpi-item"><div class="kpi-val" style="color:#4ade80">0.879</div><div class="kpi-lbl">Mean Score</div></div>
+      <div class="kpi-item"><div class="kpi-val" style="color:#4ade80">0.84</div><div class="kpi-lbl">Mean Score</div></div>
     </div>
     <div class="threshold ok">SLO: Mean ≥ 0.75 — ✅ OK</div>
     <canvas id="qualChart"></canvas>
@@ -94,13 +94,13 @@
 </div>
 
 <script>
-const latLabels  = ["07:17", "07:28", "07:33", "07:37", "07:42", "07:44", "07:46", "08:02", "08:14"];
-const latP95     = [155.55, 153.0, 154.1, 156.65, 157.55, 156.1, 152.55, 153.55, 152.55];
-const reqLabels  = ["07:17", "07:28", "07:33", "07:37", "07:42", "07:44", "07:46", "08:02", "08:14"];
-const reqCounts  = [10, 1, 10, 10, 10, 10, 10, 10, 10];
-const costLabels = ["07:17", "07:28", "07:33", "07:37", "07:42", "07:44", "07:46", "08:02", "08:14"];
-const costVals   = [0.020259, 0.001806, 0.020619, 0.019338, 0.021393, 0.023073, 0.017859, 0.020619, 0.019629];
-const qualScores = [0.9, 0.8, 0.8, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.8, 0.9, 0.8, 0.8, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.8, 0.8, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.8, 0.8, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.8, 0.8, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.8, 0.8, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.8, 0.8, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.8, 0.8, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9];
+const latLabels  = ["08:29"];
+const latP95     = [2652.8];
+const reqLabels  = ["08:29"];
+const reqCounts  = [5];
+const costLabels = ["08:29"];
+const costVals   = [0.009255];
+const qualScores = [0.8, 0.9, 0.9, 0.8, 0.8];
 
 const cfg = (labels, datasets, yLabel) => ({
   type:'line', data:{labels, datasets},

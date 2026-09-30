@@ -53,8 +53,8 @@ async def dashboard() -> HTMLResponse:
 
 
 @app.get("/dashboard/data")
-async def dashboard_data(minutes: int = 60) -> dict:
-    return build_dashboard_data(minutes)
+async def dashboard_data(minutes: int = 60, scope: str = "all") -> dict:
+    return build_dashboard_data(minutes, scope)
 
 
 @app.post("/chat", response_model=ChatResponse)

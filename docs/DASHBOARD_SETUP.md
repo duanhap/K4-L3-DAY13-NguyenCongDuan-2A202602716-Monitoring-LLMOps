@@ -24,9 +24,10 @@ Giữ time range mặc định 60 phút, refresh 30 giây và hiển thị thres
 1. Hoàn thiện logging/PII và chạy API.
 2. Chạy `python scripts/load_test.py --concurrency 5` để tạo baseline.
 3. Mở `http://127.0.0.1:8000/dashboard`. Dashboard runtime tích hợp FastAPI, đọc `data/logs.jsonl`, hiển thị 6 panel và tự refresh mỗi 30 giây.
-4. Dùng bộ chọn time range để đổi giữa 15/30/60 phút; mặc định là 60 phút. Ngưỡng được nạp từ `config/dashboard.yaml`.
-5. Langfuse vẫn là nơi mở trace/prompt version để điều tra sâu. Dashboard local dùng log đã scrub PII làm nguồn chuẩn.
-6. Chạy validator:
+4. Bộ lọc `All features` dùng ngưỡng dashboard chung; `Challenge feature` lọc theo feature/latency threshold trong file challenge local mà không trả nội dung challenge ra API. Để chụp incident, chọn `Challenge feature` và time range 15 phút.
+5. Dùng bộ chọn time range để đổi giữa 15/30/60 phút; mặc định là 60 phút. Ngưỡng dashboard chung được nạp từ `config/dashboard.yaml`.
+6. Langfuse vẫn là nơi mở trace/prompt version để điều tra sâu. Dashboard local dùng log đã scrub PII làm nguồn chuẩn.
+7. Chạy validator:
 
 ```bash
 python scripts/validate_dashboard.py
