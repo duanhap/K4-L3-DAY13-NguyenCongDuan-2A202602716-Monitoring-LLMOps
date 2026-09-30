@@ -50,12 +50,12 @@
 - **Cách tạo/nhận và truyền correlation ID:** Middleware nhận `x-request-id` hợp lệ hoặc sinh `req-<8-hex>`, bind vào structlog context và trả về header.
 - **Các metadata được ghi vào structured log:** Handler bind `user_id_hash`, `session_id`, `feature`, `model`, `env`; correlation ID được bind ở middleware.
 - **Cách bảo đảm PII được scrub trước khi ghi:** Processor đệ quy scrub mọi chuỗi trong event trước JSONL file writer; baseline trước sửa có 0 PII leak theo validator.
-- **Cách kiểm chứng kết quả:** CP0 baseline `validate_logs.py` 30/100 và pytest 22 passed. CP1 tests đã được bổ sung nhưng chưa thể chạy trong workspace hiện tại vì không có Python/.venv; cần chạy lại trong terminal local.
+- **Cách kiểm chứng kết quả:** CP0 baseline `validate_logs.py` 30/100. Học viên báo CP1 load test, `test_pii.py` và `test_validate_logs.py` đã pass; CP1 validator score mới chưa được cung cấp.
 
 ## 5. Tracing và prompt versioning
 
 - **Cách xác nhận traces do chính tôi tạo trong project cá nhân:** Chưa xác nhận trace mới; app báo tracing enabled nhưng exporter timeout khi gửi spans.
-- **Cấu trúc root/retrieval/generation observations:**
+- **Cấu trúc root/retrieval/generation observations:** Root `lab-agent-run`; child `retrieval` span ghi query đã sanitize, documents/count và tool status; child `generation` ghi model, prompt metadata, usage, cost và completion preview. Code đã triển khai; cần xác nhận live trên Langfuse.
 - **Cách nối trace với log:**
 - **Prompt name:**
 - **Version/label baseline:**
