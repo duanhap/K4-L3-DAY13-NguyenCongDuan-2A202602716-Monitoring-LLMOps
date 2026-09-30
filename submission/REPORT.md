@@ -37,7 +37,7 @@
 
 | Nội dung | Baseline | Kết quả cuối | Nhận xét |
 |---|---|---|---|
-| `validate_logs.py` | 30/100 (105 records; 100 thiếu required fields; 100 thiếu enrichment; 0 correlation ID hợp lệ; 0 PII leak) | | Baseline CP0 trước khi sửa CP1 |
+| `validate_logs.py` | 30/100 (105 records; 100 thiếu required fields; 100 thiếu enrichment; 0 correlation ID hợp lệ; 0 PII leak) | Chưa chạy sau sửa | CP1 code đã sửa; cần xác nhận trong local venv |
 | `validate_dashboard.py` | 6/6 panel hợp lệ | | Baseline contract validation |
 | `pytest` | 22 passed | | `python -m pytest -q` |
 | Số traces hợp lệ | Chưa xác nhận trên Langfuse; exporter timeout | | Chưa tính là trace thành công |
@@ -47,10 +47,10 @@
 
 ## 4. Logging và PII
 
-- **Cách tạo/nhận và truyền correlation ID:** Chưa triển khai ở baseline; middleware trả `MISSING` (sẽ hoàn thiện CP1).
-- **Các metadata được ghi vào structured log:** Chưa đầy đủ ở baseline; validator báo 100 record thiếu enrichment (sẽ hoàn thiện CP1).
-- **Cách bảo đảm PII được scrub trước khi ghi:** Validator baseline phát hiện 0 PII leak; cần bật processor scrub trong logger ở CP1 và xác nhận lại.
-- **Cách kiểm chứng kết quả:** `validate_logs.py` baseline 30/100; pytest 22 passed.
+- **Cách tạo/nhận và truyền correlation ID:** Middleware nhận `x-request-id` hợp lệ hoặc sinh `req-<8-hex>`, bind vào structlog context và trả về header.
+- **Các metadata được ghi vào structured log:** Handler bind `user_id_hash`, `session_id`, `feature`, `model`, `env`; correlation ID được bind ở middleware.
+- **Cách bảo đảm PII được scrub trước khi ghi:** Processor đệ quy scrub mọi chuỗi trong event trước JSONL file writer; baseline trước sửa có 0 PII leak theo validator.
+- **Cách kiểm chứng kết quả:** CP0 baseline `validate_logs.py` 30/100 và pytest 22 passed. CP1 tests đã được bổ sung nhưng chưa thể chạy trong workspace hiện tại vì không có Python/.venv; cần chạy lại trong terminal local.
 
 ## 5. Tracing và prompt versioning
 
