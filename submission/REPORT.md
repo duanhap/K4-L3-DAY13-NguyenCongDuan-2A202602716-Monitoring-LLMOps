@@ -8,7 +8,7 @@
 - **MSSV:** 2A202602716
 - **Lớp:** K4-L3B
 - **Repository URL:** https://github.com/duanhap/K4-L3-DAY13-NguyenCongDuan-2A202602716-Monitoring-LLMOps
-- **Commit SHA cuối:** 8a23c963a7943d244e999cc5a6874f35a8f68f7b
+- **Commit SHA cuối:** 8fa96d95f5fb394d6f821c6c6fa6a311f8a8d227
 - **Challenge ID:** `day13-k4-l3b-monitoring-llmops-v1`
 - **Tên project Langfuse cá nhân:** `day13-k4-l3b-2A202602716`
 
@@ -107,7 +107,7 @@
 
 ## 9. Checklist trước khi nộp
 
-- [x] Kết quả và evidence thuộc commit SHA cuối — `8a23c963a7943d244e999cc5a6874f35a8f68f7b`.
+- [x] Kết quả và evidence thuộc commit SHA cuối — `8fa96d95f5fb394d6f821c6c6fa6a311f8a8d227`.
 - [x] Tất cả ảnh/output mở được bằng đường dẫn tương đối — 14 file evidence đặt trong `submission/evidence/`, dẫn bằng `evidence/xx-name.png`.
 - [x] Incident evidence nối đúng metric → log → trace — `12-incident-metric.png` (P95 spike) → `13-incident-log.png` (`correlation_id=req-3fca2e96`, latency=2653ms) → `14-incident-trace.png` (retrieval span ~2500ms).
 - [x] Trace/prompt evidence thuộc project Langfuse cá nhân `day13-k4-l3b-2A202602716` — ảnh 06–10 và 14 lấy từ đúng project; không lộ API key/secret.
