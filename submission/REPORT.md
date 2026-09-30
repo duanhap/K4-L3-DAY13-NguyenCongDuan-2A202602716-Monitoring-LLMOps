@@ -4,8 +4,8 @@
 
 ## 1. Thông tin học viên
 
-- **Họ và tên:**
-- **MSSV:**
+- **Họ và tên:** Nguyễn Công Duẩn
+- **MSSV:** 2A202602716
 - **Lớp:** K4-L3B
 - **Repository URL:**
 - **Commit SHA cuối:**
@@ -37,24 +37,24 @@
 
 | Nội dung | Baseline | Kết quả cuối | Nhận xét |
 |---|---|---|---|
-| `validate_logs.py` | | | |
-| `validate_dashboard.py` | | | |
-| `pytest` | | | |
-| Số traces hợp lệ | | | |
-| Số PII leak | | | |
+| `validate_logs.py` | 30/100 (105 records; 100 thiếu required fields; 100 thiếu enrichment; 0 correlation ID hợp lệ; 0 PII leak) | | Baseline CP0 trước khi sửa CP1 |
+| `validate_dashboard.py` | 6/6 panel hợp lệ | | Baseline contract validation |
+| `pytest` | 22 passed | | `python -m pytest -q` |
+| Số traces hợp lệ | Chưa xác nhận trên Langfuse; exporter timeout | | Chưa tính là trace thành công |
+| Số PII leak | 0 | | Theo validator hiện tại |
 | Latency P95 / TTFT P95 | | | |
 | Retrieval success rate | | | |
 
 ## 4. Logging và PII
 
-- **Cách tạo/nhận và truyền correlation ID:**
-- **Các metadata được ghi vào structured log:**
-- **Cách bảo đảm PII được scrub trước khi ghi:**
-- **Cách kiểm chứng kết quả:**
+- **Cách tạo/nhận và truyền correlation ID:** Chưa triển khai ở baseline; middleware trả `MISSING` (sẽ hoàn thiện CP1).
+- **Các metadata được ghi vào structured log:** Chưa đầy đủ ở baseline; validator báo 100 record thiếu enrichment (sẽ hoàn thiện CP1).
+- **Cách bảo đảm PII được scrub trước khi ghi:** Validator baseline phát hiện 0 PII leak; cần bật processor scrub trong logger ở CP1 và xác nhận lại.
+- **Cách kiểm chứng kết quả:** `validate_logs.py` baseline 30/100; pytest 22 passed.
 
 ## 5. Tracing và prompt versioning
 
-- **Cách xác nhận traces do chính tôi tạo trong project cá nhân:**
+- **Cách xác nhận traces do chính tôi tạo trong project cá nhân:** Chưa xác nhận trace mới; app báo tracing enabled nhưng exporter timeout khi gửi spans.
 - **Cấu trúc root/retrieval/generation observations:**
 - **Cách nối trace với log:**
 - **Prompt name:**
@@ -88,7 +88,7 @@
 ## 8. Giải thích và tự đánh giá
 
 - **Một quyết định kỹ thuật quan trọng và lý do:**
-- **Một lỗi/blocker đã gặp:**
+- **Một lỗi/blocker đã gặp:** Langfuse exporter timeout; prompt `day13-chat` label `production` trả 404 và app fallback local. CP0 chưa đóng cho đến khi trace mới xuất hiện.
 - **Cách tìm nguyên nhân và xử lý:**
 - **Cách hiểu luồng Metrics → Logs → Traces:**
 - **Vai trò của prompt version, token/cost, SLO hoặc rollback trong vận hành LLM:**
