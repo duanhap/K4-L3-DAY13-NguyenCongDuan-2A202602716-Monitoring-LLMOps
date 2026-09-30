@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>K4-L3B Day 13 — Monitoring & LLMOps Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  body { font-family: 'Segoe UI', sans-serif; background:#0f172a; color:#e2e8f0; margin:0; padding:16px; }
+  h1   { font-size:1.3rem; color:#7dd3fc; margin-bottom:4px; }
+  .meta { font-size:.8rem; color:#94a3b8; margin-bottom:20px; }
+  .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  .card { background:#1e293b; border-radius:10px; padding:16px; }
+  .card h2 { font-size:.9rem; color:#94a3b8; margin:0 0 6px; text-transform:uppercase; letter-spacing:.05em; }
+  .kpi  { display:flex; gap:24px; flex-wrap:wrap; margin-bottom:10px; }
+  .kpi-item { text-align:center; }
+  .kpi-val  { font-size:1.6rem; font-weight:700; color:#38bdf8; }
+  .kpi-lbl  { font-size:.7rem; color:#64748b; }
+  .threshold { font-size:.75rem; margin-top:6px; }
+  .ok   { color:#4ade80; }
+  .warn { color:#f87171; }
+  canvas { max-height:180px; }
+</style>
+</head>
+<body>
+<h1>📊 K4-L3B Day 13 — Monitoring &amp; LLMOps Dashboard</h1>
+<div class="meta">Source: data/logs.jsonl &nbsp;|&nbsp; Time range: last 60 min &nbsp;|&nbsp; Refresh: 30s &nbsp;|&nbsp; Generated: 2026-09-30 08:16 UTC</div>
+<div class="grid">
+
+  <!-- 1. LATENCY -->
+  <div class="card">
+    <h2>⏱ Latency &amp; TTFT (ms)</h2>
+    <div class="kpi">
+      <div class="kpi-item"><div class="kpi-val">152.0</div><div class="kpi-lbl">P50 ms</div></div>
+      <div class="kpi-item"><div class="kpi-val" style="color:#38bdf8">156.0</div><div class="kpi-lbl">P95 ms</div></div>
+      <div class="kpi-item"><div class="kpi-val">158.0</div><div class="kpi-lbl">P99 ms</div></div>
+      <div class="kpi-item"><div class="kpi-val">51.0</div><div class="kpi-lbl">TTFT P95</div></div>
+    </div>
+    <div class="threshold ok">SLO: P95 ≤ 3000 ms — ✅ OK</div>
+    <canvas id="latChart"></canvas>
+  </div>
+
+  <!-- 2. TRAFFIC -->
+  <div class="card">
+    <h2>📈 Traffic (req/min)</h2>
+    <div class="kpi">
+      <div class="kpi-item"><div class="kpi-val">81</div><div class="kpi-lbl">Total Requests</div></div>
+    </div>
+    <div class="threshold ok">SLO: rate ≥ 1 req/min</div>
+    <canvas id="trafficChart"></canvas>
+  </div>
+
+  <!-- 3. ERRORS -->
+  <div class="card">
+    <h2>🚨 Errors &amp; Retrieval</h2>
+    <div class="kpi">
+      <div class="kpi-item"><div class="kpi-val" style="color:#4ade80">0.0%</div><div class="kpi-lbl">Error Rate</div></div>
+      <div class="kpi-item"><div class="kpi-val">100.0%</div><div class="kpi-lbl">Retrieval Success</div></div>
+      <div class="kpi-item"><div class="kpi-val">0</div><div class="kpi-lbl">Failed</div></div>
+    </div>
+    <div class="threshold ok">SLO: Error rate ≤ 2% — ✅ OK</div>
+  </div>
+
+  <!-- 4. COST -->
+  <div class="card">
+    <h2>💰 Cost (USD)</h2>
+    <div class="kpi">
+      <div class="kpi-item"><div class="kpi-val">$0.164595</div><div class="kpi-lbl">Total</div></div>
+    </div>
+    <div class="threshold ok">SLO: Total ≤ $2.50 — ✅ OK</div>
+    <canvas id="costChart"></canvas>
+  </div>
+
+  <!-- 5. TOKENS -->
+  <div class="card">
+    <h2>🔤 Tokens</h2>
+    <div class="kpi">
+      <div class="kpi-item"><div class="kpi-val">3160</div><div class="kpi-lbl">Input Tokens</div></div>
+      <div class="kpi-item"><div class="kpi-val">10341</div><div class="kpi-lbl">Output Tokens</div></div>
+      <div class="kpi-item"><div class="kpi-val">13501</div><div class="kpi-lbl">Total</div></div>
+    </div>
+    <div class="threshold ok">SLO: Total ≤ 50,000 tokens</div>
+  </div>
+
+  <!-- 6. QUALITY -->
+  <div class="card">
+    <h2>⭐ Quality Score</h2>
+    <div class="kpi">
+      <div class="kpi-item"><div class="kpi-val" style="color:#4ade80">0.879</div><div class="kpi-lbl">Mean Score</div></div>
+    </div>
+    <div class="threshold ok">SLO: Mean ≥ 0.75 — ✅ OK</div>
+    <canvas id="qualChart"></canvas>
+  </div>
+
+</div>
+
+<script>
+const latLabels  = ["07:17", "07:28", "07:33", "07:37", "07:42", "07:44", "07:46", "08:02", "08:14"];
+const latP95     = [155.55, 153.0, 154.1, 156.65, 157.55, 156.1, 152.55, 153.55, 152.55];
+const reqLabels  = ["07:17", "07:28", "07:33", "07:37", "07:42", "07:44", "07:46", "08:02", "08:14"];
+const reqCounts  = [10, 1, 10, 10, 10, 10, 10, 10, 10];
+const costLabels = ["07:17", "07:28", "07:33", "07:37", "07:42", "07:44", "07:46", "08:02", "08:14"];
+const costVals   = [0.020259, 0.001806, 0.020619, 0.019338, 0.021393, 0.023073, 0.017859, 0.020619, 0.019629];
+const qualScores = [0.9, 0.8, 0.8, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.8, 0.9, 0.8, 0.8, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.8, 0.8, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.8, 0.8, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.8, 0.8, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.8, 0.8, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.8, 0.8, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.8, 0.8, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9, 0.9];
+
+const cfg = (labels, datasets, yLabel) => ({
+  type:'line', data:{labels, datasets},
+  options:{responsive:true, plugins:{legend:{labels:{color:'#94a3b8',boxWidth:10}}},
+    scales:{x:{ticks:{color:'#64748b',maxRotation:0},grid:{color:'#1e293b'}},
+             y:{ticks:{color:'#64748b'},grid:{color:'#334155'},title:{display:true,text:yLabel,color:'#64748b'}}}}
+});
+
+new Chart('latChart', cfg(latLabels,[
+  {label:'P95 ms',data:latP95,borderColor:'#38bdf8',backgroundColor:'rgba(56,189,248,.15)',fill:true,tension:.3,pointRadius:3}
+],'ms'));
+
+new Chart('trafficChart', cfg(reqLabels,[
+  {label:'req/min',data:reqCounts,borderColor:'#a78bfa',backgroundColor:'rgba(167,139,250,.15)',fill:true,tension:.3,pointRadius:3}
+],'requests'));
+
+new Chart('costChart', cfg(costLabels,[
+  {label:'cost USD',data:costVals,borderColor:'#fbbf24',backgroundColor:'rgba(251,191,36,.15)',fill:true,tension:.3,pointRadius:3}
+],'USD'));
+
+// quality histogram
+const qualBuckets = [0,0,0,0,0];
+qualScores.forEach(s => { const i=Math.min(4,Math.floor(s*5)); qualBuckets[i]++; });
+new Chart('qualChart', {
+  type:'bar',
+  data:{labels:['0-.2','.2-.4','.4-.6','.6-.8','.8-1'],datasets:[{label:'count',data:qualBuckets,backgroundColor:'rgba(52,211,153,.6)'}]},
+  options:{responsive:true,plugins:{legend:{display:false}},scales:{
+    x:{ticks:{color:'#64748b'},grid:{color:'#1e293b'}},
+    y:{ticks:{color:'#64748b'},grid:{color:'#334155'},title:{display:true,text:'# traces',color:'#64748b'}}
+  }}
+});
+</script>
+</body>
+</html>

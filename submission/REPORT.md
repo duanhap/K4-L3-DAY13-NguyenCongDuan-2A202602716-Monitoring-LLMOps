@@ -37,8 +37,8 @@
 
 | Nội dung | Baseline | Kết quả cuối | Nhận xét |
 |---|---|---|---|
-| `validate_logs.py` | 30/100 (105 records; 100 thiếu required fields; 100 thiếu enrichment; 0 correlation ID hợp lệ; 0 PII leak) | Chưa chạy sau sửa | CP1 code đã sửa; cần xác nhận trong local venv |
-| `validate_dashboard.py` | 6/6 panel hợp lệ | | Baseline contract validation |
+| `validate_logs.py` | 30/100 (105 records; 100 thiếu required fields; 100 thiếu enrichment; 0 correlation ID hợp lệ; 0 PII leak) | 100/100 | Học viên xác nhận sau CP1 |
+| `validate_dashboard.py` | 6/6 panel hợp lệ | Chưa chạy sau dashboard runtime update | Cần chạy lại contract validator |
 | `pytest` | 22 passed | | `python -m pytest -q` |
 | Số traces hợp lệ | Chưa xác nhận trên Langfuse; exporter timeout | | Chưa tính là trace thành công |
 | Số PII leak | 0 | | Theo validator hiện tại |
@@ -50,25 +50,25 @@
 - **Cách tạo/nhận và truyền correlation ID:** Middleware nhận `x-request-id` hợp lệ hoặc sinh `req-<8-hex>`, bind vào structlog context và trả về header.
 - **Các metadata được ghi vào structured log:** Handler bind `user_id_hash`, `session_id`, `feature`, `model`, `env`; correlation ID được bind ở middleware.
 - **Cách bảo đảm PII được scrub trước khi ghi:** Processor đệ quy scrub mọi chuỗi trong event trước JSONL file writer; baseline trước sửa có 0 PII leak theo validator.
-- **Cách kiểm chứng kết quả:** CP0 baseline `validate_logs.py` 30/100. Học viên báo CP1 load test, `test_pii.py` và `test_validate_logs.py` đã pass; CP1 validator score mới chưa được cung cấp.
+- **Cách kiểm chứng kết quả:** CP0 baseline `validate_logs.py` 30/100; học viên xác nhận CP1 đạt 100/100 và các test PII/validator pass.
 
 ## 5. Tracing và prompt versioning
 
-- **Cách xác nhận traces do chính tôi tạo trong project cá nhân:** Chưa xác nhận trace mới; app báo tracing enabled nhưng exporter timeout khi gửi spans.
-- **Cấu trúc root/retrieval/generation observations:** Root `lab-agent-run`; child `retrieval` span ghi query đã sanitize, documents/count và tool status; child `generation` ghi model, prompt metadata, usage, cost và completion preview. Code đã triển khai; cần xác nhận live trên Langfuse.
+- **Cách xác nhận traces do chính tôi tạo trong project cá nhân:** Đã xác nhận trên Langfuse; nhiều traces xuất hiện trong project cá nhân.
+- **Cấu trúc root/retrieval/generation observations:** Root `lab-agent-run`; child `retrieval` span ghi query đã sanitize, documents/count và tool status; child `generation` ghi model, prompt metadata, usage, cost và completion preview. Waterfall đã được xác nhận live.
 - **Cách nối trace với log:**
-- **Prompt name:**
-- **Version/label baseline:**
-- **Version/label candidate:**
-- **Trace ID của mỗi version:**
-- **Cách promote và rollback `production`:**
+- **Prompt name:** `day13-chat`.
+- **Version/label baseline:** Version 1, labels `baseline` và `production`.
+- **Version/label candidate:** Version 2, label `candidate`.
+- **Trace ID của mỗi version:** Bổ sung trace ID từ evidence `08a`/`08b` hoặc export Langfuse.
+- **Cách promote và rollback `production`:** Đã promote label `production` sang version 2 rồi rollback về version 1; evidence ở `evidence/10a-prompt-rollback.png` và `evidence/10b-prompt-rollback.png`.
 
 ## 6. Dashboard, SLO và alerts
 
-- **Dashboard và sáu panel:**
-- **SLO và lý do chọn:**
-- **Cách tính error budget:**
-- **Ba alert và runbook tương ứng:**
+- **Dashboard và sáu panel:** FastAPI dashboard tại `/dashboard`, đọc log JSONL đã scrub; latency P50/P95/P99 + TTFT P95, traffic, errors/retrieval success, cost, tokens và quality; mặc định 60 phút, refresh 30 giây. Cần chụp runtime evidence sau khi mở dashboard.
+- **SLO và lý do chọn:** 99.5% request thành công trong ≤3000 ms theo cửa sổ 28 ngày.
+- **Cách tính error budget:** `100% - 99.5% = 0.5%`; tối đa 50 request không đạt trên tổng 10,000 request.
+- **Ba alert và runbook tương ứng:** `HighLatencyP95` (>3000 ms trong 5 phút), `HighRequestErrorRate` (>2% trong 5 phút), `LowQualityScore` (mean <0.75 trong 10 phút); cấu hình tại `config/alert_rules.yaml`, runbook tại `docs/alerts.md`.
 
 > Ví dụ cách viết error budget: "SLO 99.5% trong 28 ngày nghĩa là error budget 0.5%. Nếu workload có 10,000 request thì tối đa 50 request được phép lỗi hoặc chậm hơn ngưỡng SLO."
 

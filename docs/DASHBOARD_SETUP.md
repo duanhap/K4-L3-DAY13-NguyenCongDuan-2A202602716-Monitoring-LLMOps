@@ -23,15 +23,22 @@ Giữ time range mặc định 60 phút, refresh 30 giây và hiển thị thres
 
 1. Hoàn thiện logging/PII và chạy API.
 2. Chạy `python scripts/load_test.py --concurrency 5` để tạo baseline.
-3. Dùng `data/logs.jsonl` làm nguồn chuẩn để tạo đúng sáu panel bằng Streamlit, notebook, Grafana hoặc công cụ tương đương. Langfuse vẫn là nơi mở trace/prompt version để điều tra sâu.
-4. Đặt tên panel, đơn vị và threshold giống contract.
-5. Chạy validator:
+3. Mở `http://127.0.0.1:8000/dashboard`. Dashboard runtime tích hợp FastAPI, đọc `data/logs.jsonl`, hiển thị 6 panel và tự refresh mỗi 30 giây.
+4. Dùng bộ chọn time range để đổi giữa 15/30/60 phút; mặc định là 60 phút. Ngưỡng được nạp từ `config/dashboard.yaml`.
+5. Langfuse vẫn là nơi mở trace/prompt version để điều tra sâu. Dashboard local dùng log đã scrub PII làm nguồn chuẩn.
+6. Chạy validator:
 
 ```bash
 python scripts/validate_dashboard.py
 ```
 
 Validator kiểm tra cấu trúc contract; nó không thể chứng minh biểu đồ trong ảnh dùng đúng dữ liệu. Evidence runtime vẫn bắt buộc.
+
+## SLO và alert
+
+- Primary SLO: 99.5% request thành công trong ≤3000 ms theo cửa sổ 28 ngày.
+- Error budget: `100% - 99.5% = 0.5%`; trong 10,000 request, tối đa 50 request được phép không đạt SLO.
+- Ba alert symptom-based, owner, Slack channel và điều kiện nằm trong `config/alert_rules.yaml`; hướng dẫn xử lý nằm trong `docs/alerts.md`.
 
 ## Cách kiểm tra runtime
 
@@ -41,5 +48,9 @@ Validator kiểm tra cấu trúc contract; nó không thể chứng minh biểu 
 4. Xác nhận panel liên quan thay đổi theo đúng hướng theo loại practice scenario đã chọn.
 5. Lọc log chậm, lấy correlation ID rồi mở trace có cùng ID.
 6. Tắt incident bằng `python scripts/inject_incident.py --scenario <practice_scenario> --disable`.
+
+## Evidence runtime
+
+Chụp `http://127.0.0.1:8000/dashboard` sau khi chạy workload. Ảnh cần thấy đủ sáu panel có dữ liệu, time range, đơn vị và threshold. Nếu không đọc rõ ở một ảnh, chụp riêng nửa trên/dưới thành `11a` và `11b`.
 
 Ảnh dashboard phải nhìn được tên panel, time range, đơn vị và threshold. Báo cáo phải dẫn lại trace ID hoặc log line dùng để giải thích thay đổi.
